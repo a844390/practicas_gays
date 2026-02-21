@@ -1,0 +1,9 @@
+Preguntas de la Práctica 1
+1. In an ELF binary, what is the difference between sections and segments?
+In an ELF binary, sections describe the logical organization of the program (such as code, data, or uninitialized variables) and are mainly used by the compiler and linker during build time, 
+while segments describe how the program should be laid out in memory at runtime and are used by the loader. Sections provide a fine-grained view of the program’s contents, whereas segments group 
+one or more sections into larger regions that are actually loaded into memory for execution.
+
+2. Can an ELF binary have several loadable segments?
+Yes, an ELF binary can have several loadable segments. This is common practice, for example having one loadable segment for executable code and read-only data and another for writable data and 
+uninitialized memory. Each loadable segment has its own virtual address range and size, allowing different parts of the program to be mapped into memory with appropriate layout and protections.
