@@ -39,7 +39,8 @@ memory::load_binary(const std::string& binfile)
 
     // read elf header
     // El primer paso a realizar es el de leer la cabecera del binario.
-    // En memory.hh está definido Elf32_Ehdr _ehdr; // ELF header para saber el tipo de dató
+    // En memory.hh está definido Elf32_Ehdr _ehdr; 
+    // ELF header para saber el tipo de dato
     const Elf32_Ehdr* _ehdr = *reinterpret_cast<Elf32_Ehdr*>(_binary.data());
 
     // ensure riscv32
@@ -47,7 +48,7 @@ memory::load_binary(const std::string& binfile)
     assert(_ehdr->e_ident[EI_MAG0] == ELFMAG0);
     assert(_ehdr->e_ident[EI_MAG1] == ELFMAG1);
     assert(_ehdr->e_ident[EI_MAG2] == ELFMAG2);
-    assert(_ehdr->e_ident[EI_MAG3] == ELFMAG3);  
+    assert(_ehdr->e_ident[EI_MAG3] == ELFMAG3);
 
     // ensure 32-bit
     assert(_ehdr->e_ident[EI_CLASS] == ELFCLASS32);
@@ -56,21 +57,22 @@ memory::load_binary(const std::string& binfile)
     assert(_ehdr->e_ident[EI_DATA] == ELFDATA2LSB);
 
     //RISC-V
-    // assert(_ehdr.e_machine == EM_RISCV); ?? no lo tengo claro, no se si es necesario, pero lo dejo comentado por ahora
-
-    // ensure the binary has a correct program table
-
+    // assert(_ehdr.e_machine == EM_RISCV);
 
     // entry point
     _entry_point = _ehdr->e_entry;
     // load sections in memory
-
+    // ensure the binary has a correct program table
+    assert(_entry_point == 0);
     // read ELF program header table,
     const Elf32_Phdr* _phdr = reinterpret_cast<const Elf32_Phdr*>(_binary.data() + _ehdr->e_phoff);
+    Elf32_Phdr phdr;
     const size_t phdr_size = _ehdr->e_phentsize;
     const size_t phdr_count = _ehdr->e_phnum;
+    const size_t phdr_offset = _ehdr->e_phoff;
 
     for (size_t i = 0; i < phdr_count; ++i) {
+	phdr = *reinterpret_cast<Elf32_Phdr*>(_binary.data() + phdr_offset + i * phdr_size);
         // load each segment into memory
         if (_phdr[i].p_type == PT_LOAD) {
             const auto offset = _phdr[i].p_offset;
@@ -86,5 +88,4 @@ memory::load_binary(const std::string& binfile)
             std::memcpy(&_memory[vaddr], &_binary[offset], size);
         }
     }
-    // ... to be completed
 }
