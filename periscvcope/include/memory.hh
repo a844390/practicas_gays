@@ -5,6 +5,7 @@
 #include <elf.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace mem {
 

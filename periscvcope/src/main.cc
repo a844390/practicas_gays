@@ -51,8 +51,14 @@ int main(int argc, char *argv[])
    {
        // main interpreter loop
        // ...
-        pc = proc.read_pc();
+       pc = proc.read_pc();
        uint32_t instr = mem.read<uint32_t>(pc);
+
+    //    std::cout << "PC: 0x" << std::hex << pc << std::endl;
+    //    std::cout << "Instr raw: 0x" << std::hex << instr << std::endl;
+
+    //    uint8_t opcode = instr & 0x7F;
+    //    std::cout << "Opcode: " << std::hex << (int)opcode << std::endl;
 
        std::cout << "Instrucrion read" << std::endl;
 

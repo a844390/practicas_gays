@@ -65,7 +65,7 @@ uint32_t instrs::load(memory& mem, processor & proc, uint32_t bitstream) {
   i_instruction ii{bitstream};
 
   // compute src address
-  address_t src = proc.read_reg(ii.rs1()) + ii.imm12();
+  address_t src = proc.read_reg(ii.rs1()) + ii.imm();
 
   // ToDo refactor with templates
   switch(ii.funct3()) {
@@ -125,16 +125,24 @@ uint32_t instrs::store(memory& mem, processor & proc, uint32_t bitstream) {
 // Arithmetic Inmediate
 uint32_t instrs::alui(mem::memory &, processor &proc, uint32_t bitstream) {
   i_instruction ii(bitstream);
-
   uint32_t val = proc.read_reg(ii.rs1());
 
   switch (ii.funct3()) {
-    case 0b0000000: // ADDI
+    case 0b000: // ADDI
       proc.write_reg(ii.rd(), val + ii.imm());
       break;
-    case 0b0000001: // SLLI
-      // Desplazamiento lógico a la izquierda (SLLI) determinado por los 5 bits menos significativos de imm
-      proc.write_reg(ii.rd(), val << (ii.imm() & 0x1F)); 
+    case 0b001: // SLLI
+      proc.write_reg(ii.rd(), val << (ii.imm() & 0x1F));
+      break;
+    case 0b111: // ANDI
+      proc.write_reg(ii.rd(), val & ii.imm());
+      break;
+    case 0b101: // SRLI / SRAI
+      if ((ii.imm() >> 10) & 1) {
+        proc.write_reg(ii.rd(), (int32_t)val >> (ii.imm() & 0x1F)); // SRAI
+      } else {
+        proc.write_reg(ii.rd(), val >> (ii.imm() & 0x1F)); // SRLI
+      }
       break;
   }
   return proc.next_pc();
@@ -180,6 +188,9 @@ uint32_t instrs::jal(mem::memory &, processor &proc, uint32_t bitstream) {
   // Calculate the jump address
   address_t addr = current_pc + ji.imm(); //PC actual + offset
 
+  // std::cout << "JAL from " << current_pc 
+  //         << " to " << (addr) << std::endl;
+
   // Return the jump address
   return addr;
 }
@@ -194,6 +205,11 @@ uint32_t instrs::jalr(mem::memory &, processor &proc, uint32_t bitstream) {
 
   // Calculate the jump address
   address_t addr = (proc.read_reg(ii.rs1()) + ii.imm()) & ~1; //PC actual + offset alineado a una dirección par
+
+  // std::cout << "JALR return to " << addr << std::endl;
+  // std::cout << "JALR: rs1=" << (int)ii.rs1()
+  //         << " ra=" << std::hex << proc.read_reg(ii.rs1())
+  //         << " target=" << addr << std::endl;
 
   // Return the jump address
   return addr;
